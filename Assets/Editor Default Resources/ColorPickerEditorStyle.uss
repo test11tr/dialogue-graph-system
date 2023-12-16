@@ -1,0 +1,50 @@
+*
+{
+    background-color: #282C34;
+    justify-content: center;
+}
+
+:root
+{
+    --yellow-color: #FDD052;
+}
+
+Label
+{
+    font-size: 20px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    margin: 8px;
+}
+
+#color-picker
+{
+    margin: 8px;
+}
+
+.horizontal-container
+{
+    flex-direction: row;
+    align-content: center;
+    flex-wrap: wrap;
+    margin: 8px;
+}
+
+.dark-button
+{
+    background-color: #1C2025;
+    color: #E0E0E0;
+    border-color: transparent;
+    min-height: 50px;
+}
+
+.dark-button:hover
+{
+    background-color: #181B1F;
+    color: var(--yellow-color);
+}
+
+.dark-button:active
+{
+    border-color: var(--yellow-color);
+}
