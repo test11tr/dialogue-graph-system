@@ -8,18 +8,17 @@ public class ColorPickerEditorWindowUI : EditorWindow
     [SerializeField]
     private StyleSheet m_StyleSheet = default;
 
-    [MenuItem("Kaan/UI/CaseStudy-ColorPickerUI")]
+    [MenuItem("T11/UI/ColorPickerUI (Study)")]
     public static void ShowExample()
     {
-        ColorPickerEditorWindowUI wnd = GetWindow<ColorPickerEditorWindowUI>();
-        wnd.titleContent = new GUIContent("CaseStudy-ColorPickerUI");
+        GetWindow<ColorPickerEditorWindowUI>("ColorPickerUI (Study)");
     }
 
     public void CreateGUI()
     {
         VisualElement container = new VisualElement();
         rootVisualElement.Add(container);
-        StyleSheet styleSheet = (StyleSheet) EditorGUIUtility.Load("ColorPickerEditorStyle.uss");
+        StyleSheet styleSheet = (StyleSheet) EditorGUIUtility.Load("Study/ColorPickerEditorStyle.uss");
         rootVisualElement.styleSheets.Add(styleSheet);
 
         Label title = new Label("Color Picker");
