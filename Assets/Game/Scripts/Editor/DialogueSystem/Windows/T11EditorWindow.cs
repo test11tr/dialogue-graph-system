@@ -7,6 +7,8 @@ using UnityEditor.UIElements;
 
 namespace T11.Windows
 {
+    using Utilities;
+
     public class T11EditorWindow : EditorWindow
     {
         [MenuItem("T11/Dialogue Graph")]
@@ -23,15 +25,14 @@ namespace T11.Windows
 
         private void AddGraphView()
         {
-            T11GraphView graphView = new T11GraphView();
+            T11GraphView graphView = new T11GraphView(this);
             graphView.StretchToParentSize();
             rootVisualElement.Add(graphView);
         }
 
         private void AddStyles()
         {
-            StyleSheet styleSheet = (StyleSheet)EditorGUIUtility.Load("DialogueSystem/T11Variables.uss");
-            rootVisualElement.styleSheets.Add(styleSheet);
+            rootVisualElement.AddStyleSheets("DialogueSystem/T11Variables.uss");
         }
     }
 }

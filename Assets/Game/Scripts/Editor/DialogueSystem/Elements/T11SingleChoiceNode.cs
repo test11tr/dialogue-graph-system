@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using T11.Enumerations;
+using T11.Utilities;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
@@ -23,7 +24,7 @@ namespace T11.Elements
 
             foreach (var choice in Choices)
             {
-                Port choicePort = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(bool));
+                Port choicePort = this.CreatePort(choice);
                 choicePort.portName = choice;
                 outputContainer.Add(choicePort);
             }

@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 namespace T11.Elements
 {
     using Enumerations;
-    using UnityEngine.UIElements;
+    using T11.Utilities;
 
     public class T11Node : Node
     {
@@ -18,7 +18,7 @@ namespace T11.Elements
 
         public virtual void Initialize(Vector2 position)
         {
-            DialogueName = "DialogueName";
+            DialogueName = "Dialogue Name";
             Choices = new List<string>();
             Text = "Dialogue Text.";
 
@@ -31,17 +31,18 @@ namespace T11.Elements
         public virtual void Draw()
         {
             /* TITLE Container */
-            TextField DialogueNameTextField = new TextField()
-            {
-                value = DialogueName,
-            };
-            DialogueNameTextField.AddToClassList("t11-node__textfield");
-            DialogueNameTextField.AddToClassList("t11-node__filename-textfield");
-            DialogueNameTextField.AddToClassList("t11-node__textfield_hidden");
+            TextField DialogueNameTextField = t11ElementUtility.CreateTextField(DialogueName);
+
+            DialogueNameTextField.AddClasses(
+                "t11-node__textfield",
+                "t11-node__filename-textfield",
+                "t11-node__textfield_hidden"
+            );
+
             titleContainer.Insert(0, DialogueNameTextField);
 
             /* INPUT Container */
-            Port inputPort = InstantiatePort(Orientation.Horizontal, Direction.Input, Port.Capacity.Multi, typeof(bool));
+            Port inputPort = this.CreatePort("Dialogue Connection", Orientation.Horizontal, Direction.Input, Port.Capacity.Multi);
             inputPort.portName = "Dialogue Connection";
             inputContainer.Add(inputPort);
 
@@ -50,17 +51,15 @@ namespace T11.Elements
 
             customDataContainer.AddToClassList("t11-node__custom-data-container");
 
-            Foldout textFoldout = new Foldout() 
-            {
-                text = "Dialogue Text"
-            };
+            Foldout textFoldout = t11ElementUtility.CreateFoldout("Dialogue Details");
 
-            TextField textTextField = new TextField()
-            {
-                value = Text
-            };
-            textTextField.AddToClassList("t11-node__textfield");
-            textTextField.AddToClassList("t11-node__quote-textfield");
+            TextField textTextField = t11ElementUtility.CreateTextArea(Text);
+
+            textTextField.AddClasses(
+                "t11-node__textfield",
+                "t11-node__quote-textfield"
+            );
+
             textFoldout.Add(textTextField);
             customDataContainer.Add(textFoldout);
 

@@ -22,10 +22,7 @@
 
 .t11-node__textfield > .unity-text-field__input
 {
-	background-color: #1D1D1E;
-	border-color: #27292C;
-	border-radius: 4px;
-	max-width: 240px;
+	border-color: transparent;
 	min-width: 160px;
 	padding: 8px;
 }
@@ -45,6 +42,9 @@
 .t11-node__filename-textfield > .unity-text-field__input
 {
 	max-width: 1000px;
+	background-color: transparent;
+	border-color: transparent;
+	-unity-font-style: bold;
 }
 
 .t11-node__filename-textfield > .unity-text-field__input:focus
@@ -75,7 +75,6 @@
 	border-left-color: #27292C;
 	border-left-width: 4px;
 	padding: 16px;
-	max-width: 600px;
 }
 
 .t11-node__quote-textfield > .unity-text-field__input:hover
