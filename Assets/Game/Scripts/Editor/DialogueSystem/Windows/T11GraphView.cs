@@ -9,6 +9,7 @@ namespace T11.Windows
     using Elements;
     using Enumerations;
     using Utilities;
+    using Data.Error;
     using System.Collections.Generic;
 
     public class T11GraphView : GraphView
@@ -16,11 +17,15 @@ namespace T11.Windows
         private T11EditorWindow editorWindow;
         private t11SearchWindow searchWindow;
 
+        private SerializableDictionary<string, T11NodeErrorData> ungroupedNodes;
+
         public T11GraphView(T11EditorWindow t11EditorWindow)
         {
             editorWindow = t11EditorWindow;
+            ungroupedNodes = new SerializableDictionary<string, T11NodeErrorData>();
             AddManipulators();
             AddSearchWindow();
+            OnElementsDeleted();
             AddGridBacground();
             AddStyles();
         }
@@ -103,8 +108,9 @@ namespace T11.Windows
         {
             Type nodeType = Type.GetType($"T11.Elements.T11{dialogueType}Node");
             T11Node node = (T11Node) Activator.CreateInstance( nodeType );
-            node.Initialize(position);
+            node.Initialize(this, position);
             node.Draw();
+            AddUngroupedNode(node);
             return node;
         }
 
@@ -138,6 +144,77 @@ namespace T11.Windows
 
             Vector2 localMousePosition = contentViewContainer.WorldToLocal(worldMousePosition);
             return localMousePosition;
+        }
+
+        public void AddUngroupedNode(T11Node node)
+        {
+            string nodeName = node.DialogueName;
+
+            if(!ungroupedNodes.ContainsKey(nodeName))
+            {
+                T11NodeErrorData nodeErrorData = new T11NodeErrorData();
+                nodeErrorData.Nodes.Add(node);
+                ungroupedNodes.Add(nodeName, nodeErrorData);
+                return;
+            }
+
+            List<T11Node> ungroupedNodesList = ungroupedNodes[nodeName].Nodes;
+
+            ungroupedNodesList.Add(node);
+
+            Color errorColor = ungroupedNodes[nodeName].ErrorData.Color;
+
+            node.SetErrorStyle(errorColor);
+
+            if(ungroupedNodesList.Count == 2)
+            {
+                ungroupedNodesList[0].SetErrorStyle(errorColor);
+            }
+        }
+
+        public void RemoveUngroupedNode(T11Node node)
+        {
+            string nodeName = node.DialogueName;
+
+            List<T11Node> ungroupedNodesList = ungroupedNodes[nodeName].Nodes;
+
+            ungroupedNodesList.Remove(node);
+
+            node.ResetStyle();
+
+            if(ungroupedNodesList.Count == 1)
+            {
+                ungroupedNodesList[0].ResetStyle();
+                return;
+            }
+
+            if(ungroupedNodesList.Count == 0)
+            {
+                ungroupedNodes.Remove(nodeName);
+            }
+        }
+
+        private void OnElementsDeleted()
+        {
+            deleteSelection = (operationName, askUser) =>
+            {
+                List<T11Node> nodesToDelete = new List<T11Node>();
+
+                foreach(GraphElement element in selection)
+                {
+                    if(element is T11Node node)
+                    {
+                        nodesToDelete.Add(node);
+                        continue;
+                    }
+                }
+
+                foreach(T11Node node in nodesToDelete)
+                {
+                    RemoveUngroupedNode(node);
+                    RemoveElement(node);
+                }
+            };
         }
     }
 }

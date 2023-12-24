@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using T11.Enumerations;
 using T11.Utilities;
+using T11.Windows;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 
@@ -10,9 +11,9 @@ namespace T11.Elements
 {
     public class T11MultipleChoiceNode : T11Node
     {
-        public override void Initialize(Vector2 position)
+        public override void Initialize(T11GraphView t11GraphView, Vector2 position)
         {
-            base.Initialize(position);
+            base.Initialize(t11GraphView, position);
             DialogueType = T11DialogueType.MultipleChoice;
             Choices.Add("New Choice");
         }

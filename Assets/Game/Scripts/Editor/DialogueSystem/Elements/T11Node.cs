@@ -7,7 +7,8 @@ using UnityEngine.UIElements;
 namespace T11.Elements
 {
     using Enumerations;
-    using T11.Utilities;
+    using Utilities;
+    using Windows;
 
     public class T11Node : Node
     {
@@ -15,13 +16,17 @@ namespace T11.Elements
         public List<string> Choices { get; set; }
         public string Text { get; set; }
         public T11DialogueType DialogueType { get; set; }
+        private T11GraphView graphView;
+        private Color defaultBackgroundColor;
 
-        public virtual void Initialize(Vector2 position)
+        public virtual void Initialize(T11GraphView t11GraphView, Vector2 position)
         {
             DialogueName = "Dialogue Name";
             Choices = new List<string>();
             Text = "Dialogue Text.";
 
+            graphView = t11GraphView;
+            defaultBackgroundColor = new Color(29f / 255, 29f / 255, 30f / 255);
             SetPosition(new Rect(position, Vector2.zero));
 
             mainContainer.AddToClassList("t11-node__main-container");
@@ -31,7 +36,12 @@ namespace T11.Elements
         public virtual void Draw()
         {
             /* TITLE Container */
-            TextField DialogueNameTextField = t11ElementUtility.CreateTextField(DialogueName);
+            TextField DialogueNameTextField = t11ElementUtility.CreateTextField(DialogueName, callback =>
+            {
+                graphView.RemoveUngroupedNode(this);
+                DialogueName = callback.newValue;
+                graphView.AddUngroupedNode(this);
+            });
 
             DialogueNameTextField.AddClasses(
                 "t11-node__textfield",
@@ -64,6 +74,16 @@ namespace T11.Elements
             customDataContainer.Add(textFoldout);
 
             extensionContainer.Add(customDataContainer);
+        }
+
+        public void SetErrorStyle(Color color)
+        {
+            mainContainer.style.backgroundColor = color;
+        }
+
+        public void ResetStyle()
+        {
+            mainContainer.style.backgroundColor = defaultBackgroundColor;
         }
     }
 }
