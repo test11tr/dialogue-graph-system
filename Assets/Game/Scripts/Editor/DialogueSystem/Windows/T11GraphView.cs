@@ -34,8 +34,8 @@ namespace T11.Windows
             AddSearchWindow();
 
             OnElementsDeleted();
-            OnGroupedElementsAdded();
-            OnGroupedElementsRemoved();
+            OnGroupElementsAdded();
+            OnGroupElementsRemoved();
             OnGroupRenamed();
             
             AddStyles();
@@ -243,17 +243,17 @@ namespace T11.Windows
         private void RemoveGroup(T11Group group)
         {
             string oldGroupName = group.oldTitle;
-            List<T11Group> groupList = groups[oldGroupName].Groups;
-            groupList.Remove(group);
+            List<T11Group> groupsList = groups[oldGroupName].Groups;
+            groupsList.Remove(group);
             group.ResetStyle();
 
-            if (groupList.Count == 1)
+            if(groupsList.Count == 1)
             {
-                groupList[0].ResetStyle();
+                groupsList[0].ResetStyle();
                 return;
             }
 
-            if (groupList.Count == 0)
+            if(groupsList.Count == 0) 
             {
                 groups.Remove(oldGroupName);
             }
@@ -350,26 +350,9 @@ namespace T11.Windows
                     groupsToDelete.Add(group);
                 }
 
-                foreach(T11Group groupToDelete in groupsToDelete)
+                foreach(T11Group group in groupsToDelete)
                 {
-                    List<T11Node> groupNodes = new List<T11Node>();
-
-                    foreach(GraphElement groupElement in groupToDelete.containedElements)
-                    {
-                        if(!(groupElement is T11Node))
-                        {
-                            continue;
-                        }
-
-                        T11Node groupNode = (T11Node) groupElement;
-                        groupNodes.Add(groupNode);
-                    }
-
-                    groupToDelete.RemoveElements(groupNodes);
-                    
-                    RemoveGroup(groupToDelete);
-
-                    RemoveElement(groupToDelete);
+                    RemoveElement(group);
                 }
 
                 foreach(T11Node node in nodesToDelete)
@@ -385,7 +368,7 @@ namespace T11.Windows
             };
         }
 
-        private void OnGroupedElementsAdded()
+        private void OnGroupElementsAdded()
         {
             elementsAddedToGroup = (group, elements) =>
             {
@@ -405,7 +388,7 @@ namespace T11.Windows
             };
         }
 
-        private void OnGroupedElementsRemoved()
+        private void OnGroupElementsRemoved()
         {
             elementsRemovedFromGroup = (group, elements) =>
             {
