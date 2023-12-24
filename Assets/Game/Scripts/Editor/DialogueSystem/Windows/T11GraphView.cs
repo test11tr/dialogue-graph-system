@@ -329,14 +329,25 @@ namespace T11.Windows
             deleteSelection = (operationName, askUser) =>
             {
                 Type groupType = typeof(T11Group);
+                Type edgeType = typeof(Edge);
+
                 List<T11Group> groupsToDelete = new List<T11Group>();
                 List<T11Node> nodesToDelete = new List<T11Node>();
+                List<Edge> edgesToDelete = new List<Edge>();
 
                 foreach(GraphElement element in selection)
                 {
                     if(element is T11Node node)
                     {
                         nodesToDelete.Add(node);
+                        continue;
+                    }
+
+                    if(element.GetType() == edgeType)
+                    {
+                        Edge edge = (Edge) element;
+
+                        edgesToDelete.Add(edge);
                         continue;
                     }
 
@@ -370,6 +381,8 @@ namespace T11.Windows
                     RemoveElement(group);
                 }
 
+                DeleteElements(edgesToDelete);
+
                 foreach(T11Node node in nodesToDelete)
                 {
                     if(node.Group != null)
@@ -378,6 +391,9 @@ namespace T11.Windows
                     }
 
                     RemoveUngroupedNode(node);
+
+                    node.DisconnectAllPorts();
+
                     RemoveElement(node);
                 }
             };
