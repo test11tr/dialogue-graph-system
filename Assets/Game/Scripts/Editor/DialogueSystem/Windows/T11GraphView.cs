@@ -346,12 +346,27 @@ namespace T11.Windows
                     }
 
                     T11Group group = (T11Group) element;
-                    RemoveGroup(group);
+                    
                     groupsToDelete.Add(group);
                 }
 
                 foreach(T11Group group in groupsToDelete)
                 {
+                    List<T11Node> groupNodes = new List<T11Node>();
+
+                    foreach(GraphElement groupElement in group.containedElements)
+                    {
+                        if(!(groupElement is T11Node))
+                        {
+                            continue;
+                        }
+
+                        T11Node groupNode = (T11Node) groupElement;
+                        groupNodes.Add(groupNode);
+                    }
+
+                    group.RemoveElements(groupNodes);
+                    RemoveGroup(group);
                     RemoveElement(group);
                 }
 
