@@ -9,7 +9,7 @@ namespace T11.Utilities
     using Elements;
     using UnityEditor.Experimental.GraphView;
 
-    public static class t11ElementUtility
+    public static class T11ElementUtility
     {
         public static TextField CreateTextField(string value = null, EventCallback<ChangeEvent<string>> onValueChanged = null) {
             TextField textField = new TextField()

@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace T11.Utilities
 {
-    public static class t11StyleUtility
+    public static class T11StyleUtility
     {
         public static VisualElement AddStyleSheets(this VisualElement element, params string[] styleSheetNames)
         {

@@ -24,7 +24,7 @@ namespace T11.Elements
 
             /* MAIN Container */
 
-            Button addChoiceButton = t11ElementUtility.CreateButton("Add Choice", () =>
+            Button addChoiceButton = T11ElementUtility.CreateButton("Add Choice", () =>
             {
                 Port choicePort = CreateChoicePort("New Choice");
                 Choices.Add("New Choice");
@@ -49,11 +49,11 @@ namespace T11.Elements
         {
             Port choicePort = this.CreatePort();
 
-            Button deleteChoiceButton = t11ElementUtility.CreateButton("X");
+            Button deleteChoiceButton = T11ElementUtility.CreateButton("X");
 
             deleteChoiceButton.AddToClassList("t11-node__button");
 
-            TextField choiceTextField = t11ElementUtility.CreateTextField(choice);
+            TextField choiceTextField = T11ElementUtility.CreateTextField(choice);
 
             choiceTextField.AddClasses(
                 "t11-node__textfield",

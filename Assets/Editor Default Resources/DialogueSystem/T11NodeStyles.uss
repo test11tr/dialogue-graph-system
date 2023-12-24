@@ -1,3 +1,11 @@
+Label
+{
+    font-size: 20px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    margin: 8px;
+}
+
 /* CONTAINERS */
 
 .t11-node__extension-container
@@ -42,9 +50,8 @@
 .t11-node__filename-textfield > .unity-text-field__input
 {
 	max-width: 1000px;
-	background-color: transparent;
-	border-color: transparent;
-	-unity-font-style: bold;
+	background-color: #33414c;
+	border-color: #27292C;
 }
 
 .t11-node__filename-textfield > .unity-text-field__input:focus
@@ -56,7 +63,7 @@
 .t11-node__choice-textfield > .unity-text-field__input
 {
 	font-size: 11px;
-	height: 35px;
+	height: 30px;
 	max-width: 1000px;
 	min-width: 0px;
 }

@@ -16,14 +16,15 @@ namespace T11.Elements
         public List<string> Choices { get; set; }
         public string Text { get; set; }
         public T11DialogueType DialogueType { get; set; }
+        public T11Group Group { get; set; }
         private T11GraphView graphView;
         private Color defaultBackgroundColor;
 
         public virtual void Initialize(T11GraphView t11GraphView, Vector2 position)
         {
-            DialogueName = "Dialogue Name";
+            DialogueName = "Type Dialogue Name";
             Choices = new List<string>();
-            Text = "Dialogue Text.";
+            Text = "Write dialogue here.";
 
             graphView = t11GraphView;
             defaultBackgroundColor = new Color(29f / 255, 29f / 255, 30f / 255);
@@ -35,12 +36,23 @@ namespace T11.Elements
 
         public virtual void Draw()
         {
+            Label title = new Label("Dialogue Name:");
             /* TITLE Container */
-            TextField DialogueNameTextField = t11ElementUtility.CreateTextField(DialogueName, callback =>
+            TextField DialogueNameTextField = T11ElementUtility.CreateTextField(DialogueName, callback =>
             {
-                graphView.RemoveUngroupedNode(this);
+                if (Group == null) 
+                {
+                    graphView.RemoveUngroupedNode(this);
+                    DialogueName = callback.newValue;
+                    graphView.AddUngroupedNode(this);
+                    return;
+                }
+
+                T11Group currentGroup = Group;
+
+                graphView.RemoveGroupedNode(this, Group);
                 DialogueName = callback.newValue;
-                graphView.AddUngroupedNode(this);
+                graphView.AddGroupedNode(this, currentGroup);
             });
 
             DialogueNameTextField.AddClasses(
@@ -49,7 +61,8 @@ namespace T11.Elements
                 "t11-node__textfield_hidden"
             );
 
-            titleContainer.Insert(0, DialogueNameTextField);
+            titleContainer.Insert(0, title);
+            titleContainer.Insert(1, DialogueNameTextField);
 
             /* INPUT Container */
             Port inputPort = this.CreatePort("Dialogue Connection", Orientation.Horizontal, Direction.Input, Port.Capacity.Multi);
@@ -61,9 +74,9 @@ namespace T11.Elements
 
             customDataContainer.AddToClassList("t11-node__custom-data-container");
 
-            Foldout textFoldout = t11ElementUtility.CreateFoldout("Dialogue Details");
+            Foldout textFoldout = T11ElementUtility.CreateFoldout("Dialogue Details");
 
-            TextField textTextField = t11ElementUtility.CreateTextArea(Text);
+            TextField textTextField = T11ElementUtility.CreateTextArea(Text);
 
             textTextField.AddClasses(
                 "t11-node__textfield",

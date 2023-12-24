@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
 
 namespace T11.Windows
 {
@@ -10,23 +11,33 @@ namespace T11.Windows
     using Enumerations;
     using Utilities;
     using Data.Error;
-    using System.Collections.Generic;
 
     public class T11GraphView : GraphView
     {
         private T11EditorWindow editorWindow;
-        private t11SearchWindow searchWindow;
+        private T11SearchWindow searchWindow;
 
         private SerializableDictionary<string, T11NodeErrorData> ungroupedNodes;
+        private SerializableDictionary<string, T11GroupErrorData> groups;
+        private SerializableDictionary<Group, SerializableDictionary<string, T11NodeErrorData>> groupedNodes;
 
         public T11GraphView(T11EditorWindow t11EditorWindow)
         {
             editorWindow = t11EditorWindow;
+
             ungroupedNodes = new SerializableDictionary<string, T11NodeErrorData>();
+            groups = new SerializableDictionary<string, T11GroupErrorData>();
+            groupedNodes = new SerializableDictionary<Group, SerializableDictionary<string, T11NodeErrorData>>();
+
             AddManipulators();
-            AddSearchWindow();
-            OnElementsDeleted();
             AddGridBacground();
+            AddSearchWindow();
+
+            OnElementsDeleted();
+            OnGroupedElementsAdded();
+            OnGroupedElementsRemoved();
+            OnGroupRenamed();
+            
             AddStyles();
         }
 
@@ -49,7 +60,7 @@ namespace T11.Windows
         {
             if( searchWindow == null )
             {
-                searchWindow = ScriptableObject.CreateInstance<t11SearchWindow>();
+                searchWindow = ScriptableObject.CreateInstance<T11SearchWindow>();
                 searchWindow.Initialize(this);
             }
 
@@ -117,19 +128,31 @@ namespace T11.Windows
         private IManipulator CreateGroupContextualMenu()
         {
             ContextualMenuManipulator contextualMenuManipulator = new ContextualMenuManipulator(
-                MenuEvent => MenuEvent.menu.AppendAction("Add Group", actionEvent => AddElement(CreateGroup("Dialogue Group", GetLocalMousePosition(actionEvent.eventInfo.localMousePosition))))
+                MenuEvent => MenuEvent.menu.AppendAction("Add Group", actionEvent => CreateGroup("Dialogue Group", GetLocalMousePosition(actionEvent.eventInfo.localMousePosition)))
             );
             return contextualMenuManipulator;
         }
 
-        public Group CreateGroup(string title, Vector2 localMousePosition)
+        public T11Group CreateGroup(string title, Vector2 localMousePosition)
         {
-            Group group = new Group()
-            {
-                title = title,
-            };
+            T11Group group = new T11Group(title, localMousePosition);
 
-            group.SetPosition(new Rect(localMousePosition, Vector2.zero));
+            AddGroup(group);
+
+            AddElement(group);
+
+            foreach(GraphElement selectedElement in selection)
+            {
+                if(!(selectedElement is T11Node))
+                {
+                    continue;
+                }
+
+                T11Node node = (T11Node) selectedElement;
+
+                group.AddElement(node);
+            }
+
             return group;
         }
 
@@ -182,15 +205,122 @@ namespace T11.Windows
 
             node.ResetStyle();
 
-            if(ungroupedNodesList.Count == 1)
+            if (ungroupedNodesList.Count == 1)
             {
                 ungroupedNodesList[0].ResetStyle();
                 return;
             }
 
-            if(ungroupedNodesList.Count == 0)
+            if (ungroupedNodesList.Count == 0)
             {
                 ungroupedNodes.Remove(nodeName);
+            }
+        }
+
+        private void AddGroup(T11Group group)
+        {
+            string groupName = group.title;
+            if(!groups.ContainsKey(groupName))
+            {
+                T11GroupErrorData groupErrorData = new T11GroupErrorData();
+                groupErrorData.Groups.Add(group);
+                groups.Add(groupName, groupErrorData);
+                return;
+            }
+
+            List<T11Group> groupsList = groups[groupName].Groups;
+
+            groupsList.Add(group);
+            Color errorColor = groups[groupName].ErrorData.Color;
+            group.SetErrorStyle(errorColor);
+
+            if(groupsList.Count == 2)
+            {
+                groupsList[0].SetErrorStyle(errorColor);
+            }
+        }
+
+        private void RemoveGroup(T11Group group)
+        {
+            string oldGroupName = group.oldTitle;
+            List<T11Group> groupList = groups[oldGroupName].Groups;
+            groupList.Remove(group);
+            group.ResetStyle();
+
+            if (groupList.Count == 1)
+            {
+                groupList[0].ResetStyle();
+                return;
+            }
+
+            if (groupList.Count == 0)
+            {
+                groups.Remove(oldGroupName);
+            }
+        }
+
+        public void AddGroupedNode(T11Node node, T11Group group)
+        {
+            string nodeName = node.DialogueName;
+
+            node.Group = group;
+
+            if(!groupedNodes.ContainsKey(group))
+            {
+                groupedNodes.Add(group, new SerializableDictionary<string, T11NodeErrorData>());
+            }
+
+            if (!groupedNodes[group].ContainsKey(nodeName))
+            {
+                T11NodeErrorData nodeErrorData = new T11NodeErrorData();
+                
+                nodeErrorData.Nodes.Add(node);
+
+                groupedNodes[group].Add(nodeName, nodeErrorData);
+                
+                return;
+            }
+
+            List<T11Node> groupedNodesList = groupedNodes[group][nodeName].Nodes;
+
+            groupedNodesList.Add(node);
+
+            Color errorColor = groupedNodes[group][nodeName].ErrorData.Color;
+
+            node.SetErrorStyle(errorColor);
+
+            if (groupedNodesList.Count == 2)
+            {
+                groupedNodesList[0].SetErrorStyle(errorColor);
+            }
+        }
+
+        public void RemoveGroupedNode(T11Node node, T11Group group)
+        {
+            string nodeName = node.DialogueName;
+
+            node.Group = null;
+
+            List<T11Node> groupNodesList = groupedNodes[group][nodeName].Nodes;
+
+            groupNodesList.Remove(node);
+
+            node.ResetStyle();
+
+            if (groupNodesList.Count == 1)
+            {
+                groupNodesList[0].ResetStyle();
+                return;
+            }
+
+            if (groupNodesList.Count == 0)
+            {
+                groupedNodes[group].Remove(nodeName);
+
+                if (groupedNodes[group].Count == 0)
+                {
+                    groupedNodes.Remove(group);
+                }
             }
         }
 
@@ -198,6 +328,8 @@ namespace T11.Windows
         {
             deleteSelection = (operationName, askUser) =>
             {
+                Type groupType = typeof(T11Group);
+                List<T11Group> groupsToDelete = new List<T11Group>();
                 List<T11Node> nodesToDelete = new List<T11Node>();
 
                 foreach(GraphElement element in selection)
@@ -207,13 +339,101 @@ namespace T11.Windows
                         nodesToDelete.Add(node);
                         continue;
                     }
+
+                    if(element.GetType() != groupType)
+                    {
+                        continue;
+                    }
+
+                    T11Group group = (T11Group) element;
+                    RemoveGroup(group);
+                    groupsToDelete.Add(group);
+                }
+
+                foreach(T11Group groupToDelete in groupsToDelete)
+                {
+                    List<T11Node> groupNodes = new List<T11Node>();
+
+                    foreach(GraphElement groupElement in groupToDelete.containedElements)
+                    {
+                        if(!(groupElement is T11Node))
+                        {
+                            continue;
+                        }
+
+                        T11Node groupNode = (T11Node) groupElement;
+                        groupNodes.Add(groupNode);
+                    }
+
+                    groupToDelete.RemoveElements(groupNodes);
+                    
+                    RemoveGroup(groupToDelete);
+
+                    RemoveElement(groupToDelete);
                 }
 
                 foreach(T11Node node in nodesToDelete)
                 {
+                    if(node.Group != null)
+                    {
+                        node.Group.RemoveElement(node);
+                    }
+
                     RemoveUngroupedNode(node);
                     RemoveElement(node);
                 }
+            };
+        }
+
+        private void OnGroupedElementsAdded()
+        {
+            elementsAddedToGroup = (group, elements) =>
+            {
+                foreach (GraphElement element in elements)
+                {
+                    if(!(element is T11Node))
+                    {
+                        continue;
+                    }
+
+                    T11Group nodeGroup = (T11Group) group;
+                    T11Node node = (T11Node) element;
+
+                    RemoveUngroupedNode(node);
+                    AddGroupedNode(node, nodeGroup);
+                }
+            };
+        }
+
+        private void OnGroupedElementsRemoved()
+        {
+            elementsRemovedFromGroup = (group, elements) =>
+            {
+                foreach (GraphElement element in elements)
+                {
+                    if (!(element is T11Node))
+                    {
+                        continue;
+                    }
+
+                    T11Group t11Group = (T11Group)group;
+                    T11Node node = (T11Node)element;
+
+                    RemoveGroupedNode(node, t11Group);
+                    AddUngroupedNode(node);
+                }
+            };
+        }
+
+        private void OnGroupRenamed()
+        {
+            groupTitleChanged = (group, newTitle) =>
+            {
+                T11Group t11Group = (T11Group) group;
+                RemoveGroup(t11Group);
+
+                t11Group.oldTitle = newTitle;
+                AddGroup(t11Group);
             };
         }
     }

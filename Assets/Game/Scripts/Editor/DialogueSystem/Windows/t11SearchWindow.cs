@@ -8,7 +8,7 @@ namespace T11.Windows
     using Elements;
     using Enumerations;
 
-    public class t11SearchWindow : ScriptableObject, ISearchWindowProvider
+    public class T11SearchWindow : ScriptableObject, ISearchWindowProvider
     {
         private T11GraphView graphView;
         private Texture2D indentationIcon;
@@ -67,8 +67,7 @@ namespace T11.Windows
                 }
                 case Group _:
                 {
-                    Group group = graphView.CreateGroup("Dialogue Group", localMousePosition);
-                    graphView.AddElement(group);
+                    graphView.CreateGroup("Dialogue Group", localMousePosition);
                     return true;
                 }
 
