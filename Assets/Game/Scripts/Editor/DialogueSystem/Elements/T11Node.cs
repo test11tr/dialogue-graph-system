@@ -38,12 +38,16 @@ namespace T11.Elements
         {
             Label title = new Label("Dialogue Name:");
             /* TITLE Container */
-            TextField DialogueNameTextField = T11ElementUtility.CreateTextField(DialogueName, callback =>
+            TextField DialogueNameTextField = T11ElementUtility.CreateTextField(DialogueName, null, callback =>
             {
+                TextField target = (TextField)callback.target;
+
+                target.value = callback.newValue.RemoveWhitespaces().RemoveSpecialCharacters();
+
                 if (Group == null) 
                 {
                     graphView.RemoveUngroupedNode(this);
-                    DialogueName = callback.newValue;
+                    DialogueName = target.value;
                     graphView.AddUngroupedNode(this);
                     return;
                 }

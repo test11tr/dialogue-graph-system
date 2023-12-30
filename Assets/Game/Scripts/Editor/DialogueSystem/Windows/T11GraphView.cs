@@ -21,6 +21,30 @@ namespace T11.Windows
         private SerializableDictionary<string, T11GroupErrorData> groups;
         private SerializableDictionary<Group, SerializableDictionary<string, T11NodeErrorData>> groupedNodes;
 
+        private int repeatedNamesAmount;
+
+        public int RepeatedNamesAmount
+        {
+            get 
+            { 
+                return repeatedNamesAmount; 
+            }
+            set 
+            { 
+                repeatedNamesAmount = value;
+                
+                if(repeatedNamesAmount == 0)
+                {
+                    editorWindow.EnableSaving();
+                }
+
+                if(repeatedNamesAmount == 1)
+                {
+                    editorWindow.DisableSaving();
+                }
+            }
+        }
+
         public T11GraphView(T11EditorWindow t11EditorWindow)
         {
             editorWindow = t11EditorWindow;
@@ -171,7 +195,7 @@ namespace T11.Windows
 
         public void AddUngroupedNode(T11Node node)
         {
-            string nodeName = node.DialogueName;
+            string nodeName = node.DialogueName.ToLower();
 
             if(!ungroupedNodes.ContainsKey(nodeName))
             {
@@ -191,13 +215,14 @@ namespace T11.Windows
 
             if(ungroupedNodesList.Count == 2)
             {
+                ++RepeatedNamesAmount;
                 ungroupedNodesList[0].SetErrorStyle(errorColor);
             }
         }
 
         public void RemoveUngroupedNode(T11Node node)
         {
-            string nodeName = node.DialogueName;
+            string nodeName = node.DialogueName.ToLower();
 
             List<T11Node> ungroupedNodesList = ungroupedNodes[nodeName].Nodes;
 
@@ -207,6 +232,7 @@ namespace T11.Windows
 
             if (ungroupedNodesList.Count == 1)
             {
+                --RepeatedNamesAmount;
                 ungroupedNodesList[0].ResetStyle();
                 return;
             }
@@ -219,7 +245,7 @@ namespace T11.Windows
 
         private void AddGroup(T11Group group)
         {
-            string groupName = group.title;
+            string groupName = group.title.ToLower();
             if(!groups.ContainsKey(groupName))
             {
                 T11GroupErrorData groupErrorData = new T11GroupErrorData();
@@ -236,19 +262,21 @@ namespace T11.Windows
 
             if(groupsList.Count == 2)
             {
+                ++RepeatedNamesAmount;
                 groupsList[0].SetErrorStyle(errorColor);
             }
         }
 
         private void RemoveGroup(T11Group group)
         {
-            string oldGroupName = group.oldTitle;
+            string oldGroupName = group.oldTitle.ToLower();
             List<T11Group> groupsList = groups[oldGroupName].Groups;
             groupsList.Remove(group);
             group.ResetStyle();
 
             if(groupsList.Count == 1)
             {
+                --RepeatedNamesAmount;
                 groupsList[0].ResetStyle();
                 return;
             }
@@ -261,7 +289,7 @@ namespace T11.Windows
 
         public void AddGroupedNode(T11Node node, T11Group group)
         {
-            string nodeName = node.DialogueName;
+            string nodeName = node.DialogueName.ToLower();
 
             node.Group = group;
 
@@ -291,13 +319,14 @@ namespace T11.Windows
 
             if (groupedNodesList.Count == 2)
             {
+                ++RepeatedNamesAmount;
                 groupedNodesList[0].SetErrorStyle(errorColor);
             }
         }
 
         public void RemoveGroupedNode(T11Node node, T11Group group)
         {
-            string nodeName = node.DialogueName;
+            string nodeName = node.DialogueName.ToLower();
 
             node.Group = null;
 
@@ -309,6 +338,7 @@ namespace T11.Windows
 
             if (groupNodesList.Count == 1)
             {
+                --RepeatedNamesAmount;
                 groupNodesList[0].ResetStyle();
                 return;
             }
@@ -444,9 +474,10 @@ namespace T11.Windows
             groupTitleChanged = (group, newTitle) =>
             {
                 T11Group t11Group = (T11Group) group;
+                t11Group.title = newTitle.RemoveWhitespaces().RemoveSpecialCharacters();
                 RemoveGroup(t11Group);
 
-                t11Group.oldTitle = newTitle;
+                t11Group.oldTitle = t11Group.title;
                 AddGroup(t11Group);
             };
         }
