@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using T11.Enumerations;
 using T11.Utilities;
 using T11.Windows;
+using T11.Data.Save;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
@@ -14,7 +15,11 @@ namespace T11.Elements
         {
             base.Initialize(t11GraphView, position);
             DialogueType = T11DialogueType.SingleChoice;
-            Choices.Add("Next Dialogue");
+            T11ChoiceSaveData choiceData = new T11ChoiceSaveData()
+            {
+                Text = "Next Dialogue"
+            };
+            Choices.Add(choiceData);
         }
 
         public override void Draw()
@@ -23,10 +28,12 @@ namespace T11.Elements
 
             /* OUTPUT Container */
 
-            foreach (var choice in Choices)
+            foreach (T11ChoiceSaveData choice in Choices)
             {
-                Port choicePort = this.CreatePort(choice);
-                choicePort.portName = choice;
+                Port choicePort = this.CreatePort(choice.Text);
+                
+                choicePort.userData = choice;
+
                 outputContainer.Add(choicePort);
             }
             RefreshExpandedState();

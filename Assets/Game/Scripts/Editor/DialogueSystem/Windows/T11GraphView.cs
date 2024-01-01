@@ -11,6 +11,8 @@ namespace T11.Windows
     using Enumerations;
     using Utilities;
     using Data.Error;
+    using Data.Save;
+    using static UnityEditor.Experimental.GraphView.GraphView;
 
     public class T11GraphView : GraphView
     {
@@ -61,7 +63,8 @@ namespace T11.Windows
             OnGroupElementsAdded();
             OnGroupElementsRemoved();
             OnGroupRenamed();
-            
+            OnGraphViewChanged();
+
             AddStyles();
         }
 
@@ -269,7 +272,7 @@ namespace T11.Windows
 
         private void RemoveGroup(T11Group group)
         {
-            string oldGroupName = group.oldTitle.ToLower();
+            string oldGroupName = group.OldTitle.ToLower();
             List<T11Group> groupsList = groups[oldGroupName].Groups;
             groupsList.Remove(group);
             group.ResetStyle();
@@ -477,8 +480,42 @@ namespace T11.Windows
                 t11Group.title = newTitle.RemoveWhitespaces().RemoveSpecialCharacters();
                 RemoveGroup(t11Group);
 
-                t11Group.oldTitle = t11Group.title;
+                t11Group.OldTitle = t11Group.title;
                 AddGroup(t11Group);
+            };
+        }
+
+        private void OnGraphViewChanged()
+        {
+            graphViewChanged = (changes) =>
+            {
+                if(changes.edgesToCreate != null)
+                {
+                    foreach(Edge edge in changes.edgesToCreate)
+                    {
+                        T11Node nextNode = (T11Node) edge.input.node;
+                        T11ChoiceSaveData choiceData = (T11ChoiceSaveData) edge.output.userData;
+                        choiceData.NodeID = nextNode.ID;
+                    }
+                }
+
+                if(changes.elementsToRemove != null)
+                {
+                    Type edgeType = typeof(Edge);
+                    foreach(GraphElement element in changes.elementsToRemove)
+                    {
+                        if(element.GetType() != edgeType)
+                        {
+                            continue;
+                        }
+
+                        Edge edge = (Edge) element;
+                        T11ChoiceSaveData choiceData = (T11ChoiceSaveData) edge.output.userData;
+                        choiceData.NodeID = "";
+                    }
+                }
+
+                return changes;
             };
         }
     }

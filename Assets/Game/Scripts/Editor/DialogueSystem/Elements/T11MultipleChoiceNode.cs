@@ -4,6 +4,7 @@ using UnityEngine;
 using T11.Enumerations;
 using T11.Utilities;
 using T11.Windows;
+using T11.Data.Save;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 
@@ -15,7 +16,11 @@ namespace T11.Elements
         {
             base.Initialize(t11GraphView, position);
             DialogueType = T11DialogueType.MultipleChoice;
-            Choices.Add("New Choice");
+            T11ChoiceSaveData choiceData = new T11ChoiceSaveData() 
+            {
+                Text = "New Choice"
+            };
+            Choices.Add(choiceData);
         }
 
         public override void Draw()
@@ -26,8 +31,12 @@ namespace T11.Elements
 
             Button addChoiceButton = T11ElementUtility.CreateButton("Add Choice", () =>
             {
-                Port choicePort = CreateChoicePort("New Choice");
-                Choices.Add("New Choice");
+                T11ChoiceSaveData choiceData = new T11ChoiceSaveData()
+                {
+                    Text = "New Choice"
+                };
+                Choices.Add(choiceData);
+                Port choicePort = CreateChoicePort(choiceData);
                 outputContainer.Add(choicePort);
             });
 
@@ -37,7 +46,7 @@ namespace T11.Elements
 
             /* OUTPUT Container */
 
-            foreach (var choice in Choices)
+            foreach (T11ChoiceSaveData choice in Choices)
             {
                 Port choicePort = CreateChoicePort(choice);
                 outputContainer.Add(choicePort);
@@ -45,15 +54,36 @@ namespace T11.Elements
             RefreshExpandedState();
         }
 
-        private Port CreateChoicePort(string choice)
+        private Port CreateChoicePort(object userData)
         {
             Port choicePort = this.CreatePort();
 
-            Button deleteChoiceButton = T11ElementUtility.CreateButton("X");
+            choicePort.userData = userData;
+
+            T11ChoiceSaveData choiceData = (T11ChoiceSaveData)userData;
+
+            Button deleteChoiceButton = T11ElementUtility.CreateButton("X", () =>
+            {
+                if(Choices.Count == 1)
+                {
+                    return;
+                }
+
+                if(choicePort.connected) 
+                {
+                    graphView.DeleteElements(choicePort.connections);
+                }
+
+                Choices.Remove(choiceData);
+                graphView.RemoveElement(choicePort);
+            });
 
             deleteChoiceButton.AddToClassList("t11-node__button");
 
-            TextField choiceTextField = T11ElementUtility.CreateTextField(choice);
+            TextField choiceTextField = T11ElementUtility.CreateTextField(choiceData.Text, null, callback =>
+            {
+                choiceData.Text = callback.newValue;
+            });
 
             choiceTextField.AddClasses(
                 "t11-node__textfield",

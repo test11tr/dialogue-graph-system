@@ -7,23 +7,27 @@ using UnityEngine.UIElements;
 namespace T11.Elements
 {
     using Enumerations;
+    using System;
+    using Data.Save;
     using Utilities;
     using Windows;
 
     public class T11Node : Node
     {
+        public string ID { get; set; }
         public string DialogueName { get; set; }
-        public List<string> Choices { get; set; }
+        public List<T11ChoiceSaveData> Choices { get; set; }
         public string Text { get; set; }
         public T11DialogueType DialogueType { get; set; }
         public T11Group Group { get; set; }
-        private T11GraphView graphView;
+        protected T11GraphView graphView;
         private Color defaultBackgroundColor;
 
         public virtual void Initialize(T11GraphView t11GraphView, Vector2 position)
         {
+            ID = Guid.NewGuid().ToString();
             DialogueName = "Type Dialogue Name";
-            Choices = new List<string>();
+            Choices = new List<T11ChoiceSaveData>();
             Text = "Write dialogue here.";
 
             graphView = t11GraphView;

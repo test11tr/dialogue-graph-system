@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
@@ -7,14 +8,16 @@ namespace T11.Elements
 {
     public class T11Group : Group
     {
-        public string oldTitle;
+        public string ID { get; set; }
+        public string OldTitle { get; set; }
         private Color defaultBorderColor;
         private float defaultBorderWidth;
 
         public T11Group(string groupTitle, Vector2 position)
         {
+            ID = Guid.NewGuid().ToString();
             title = groupTitle;
-            oldTitle = groupTitle;
+            OldTitle = groupTitle;
             SetPosition(new Rect(position, Vector2.zero));
             defaultBorderColor = contentContainer.style.borderBottomColor.value;
             defaultBorderWidth = contentContainer.style.borderBottomWidth.value;
