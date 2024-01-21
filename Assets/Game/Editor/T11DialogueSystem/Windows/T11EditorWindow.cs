@@ -49,6 +49,7 @@ namespace T11.Windows
             Button loadButton = T11ElementUtility.CreateButton("Load", () => Load());
             Button clearButton = T11ElementUtility.CreateButton("Clear", () => Clear());
             Button resetButton = T11ElementUtility.CreateButton("Reset", () => ResetGraph());
+            Button removeButton = T11ElementUtility.CreateButton("Remove Graph", () => RemoveGraph());
             miniMapButton = T11ElementUtility.CreateButton("MiniMap", () => ToggleMiniMap());
 
             toolbar.Add(fileNameTextField);
@@ -56,12 +57,13 @@ namespace T11.Windows
             toolbar.Add(loadButton);
             toolbar.Add(clearButton);
             toolbar.Add(resetButton);
+            toolbar.Add(removeButton);
             toolbar.Add(miniMapButton);
 
             toolbar.AddStyleSheets("DialogueSystem/T11ToolbarStyles.uss");
 
             rootVisualElement.Add(toolbar);
-        }
+        }      
 
         private void AddStyles()
         {
@@ -100,6 +102,33 @@ namespace T11.Windows
             T11IOUtility.Save();
         }
 
+        private void RemoveGraph()
+        {
+            int option = EditorUtility.DisplayDialogComplex(
+                "Removing a Graph?",
+                "Are you sure to Remove this Graph?",
+                "Yes",
+                "No",
+                "Does Nothing"
+            );
+
+            switch (option)
+            {
+                case 0:
+                    Clear();
+                    T11IOUtility.Initialize(graphView, fileNameTextField.value);
+                    T11IOUtility.Remove();
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
         private void Load()
         {
             string filePath = EditorUtility.OpenFilePanel("Dialogue Graphs", "Assets/Game/Editor/T11DialogueSystem/Graphs", "asset");
@@ -108,7 +137,7 @@ namespace T11.Windows
                 return;
             }
 
-            Clear();
+            ResetGraph();
             T11IOUtility.Initialize(graphView, Path.GetFileNameWithoutExtension(filePath));
             T11IOUtility.Load();
         }

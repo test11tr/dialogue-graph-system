@@ -11,6 +11,8 @@ namespace T11.Utilities
     using Data.Save;
     using Elements;
     using ScriptableObjects;
+    using System.Drawing.Printing;
+    using System.IO;
     using T11.Data;
     using UnityEditor.Experimental.GraphView;
     using Windows;
@@ -41,6 +43,14 @@ namespace T11.Utilities
             createdDialogues = new Dictionary<string, T11DialogueSO>();
             loadedGroups = new Dictionary<string, T11Group>();
             loadedNodes = new Dictionary<string, T11Node>();
+        }
+
+        public static void Remove()
+        {
+            GetElementsFromGraphView();
+            RemoveAsset("Assets/Game/Editor/T11DialogueSystem/Graphs", $"{graphFileName}Graph");
+            RemoveFolder($"Assets/Game/T11DialogueSystem/Dialogues/{graphFileName}");
+            AssetDatabase.Refresh();
         }
 
         public static void Save()
@@ -396,6 +406,8 @@ namespace T11.Utilities
 
         private static void RemoveFolder(string fullPath)
         {
+            Debug.Log(fullPath);
+
             FileUtil.DeleteFileOrDirectory($"{fullPath}.meta");
             FileUtil.DeleteFileOrDirectory($"{fullPath}/");
         }
@@ -423,6 +435,7 @@ namespace T11.Utilities
         private static void RemoveAsset(string path, string assetName)
         {
             AssetDatabase.DeleteAsset($"{path}/{assetName}.asset");
+            AssetDatabase.DeleteAsset($"{path}/{assetName}.asset.meta");
         }
 
         private static void SaveAsset(UnityEngine.Object asset)
