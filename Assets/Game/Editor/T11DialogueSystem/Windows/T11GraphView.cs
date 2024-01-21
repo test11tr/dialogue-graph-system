@@ -13,6 +13,7 @@ namespace T11.Windows
     using Data.Error;
     using Data.Save;
     using static UnityEditor.Experimental.GraphView.GraphView;
+    using static UnityEngine.GraphicsBuffer;
 
     public class T11GraphView : GraphView
     {
@@ -23,24 +24,24 @@ namespace T11.Windows
         private SerializableDictionary<string, T11GroupErrorData> groups;
         private SerializableDictionary<Group, SerializableDictionary<string, T11NodeErrorData>> groupedNodes;
 
-        private int repeatedNamesAmount;
+        private int nameErrorsAmount;
 
-        public int RepeatedNamesAmount
+        public int NameErrorsAmount
         {
             get 
             { 
-                return repeatedNamesAmount; 
+                return nameErrorsAmount; 
             }
             set 
             { 
-                repeatedNamesAmount = value;
+                nameErrorsAmount = value;
                 
-                if(repeatedNamesAmount == 0)
+                if(nameErrorsAmount == 0)
                 {
                     editorWindow.EnableSaving();
                 }
 
-                if(repeatedNamesAmount == 1)
+                if(nameErrorsAmount == 1)
                 {
                     editorWindow.DisableSaving();
                 }
@@ -218,7 +219,7 @@ namespace T11.Windows
 
             if(ungroupedNodesList.Count == 2)
             {
-                ++RepeatedNamesAmount;
+                ++NameErrorsAmount;
                 ungroupedNodesList[0].SetErrorStyle(errorColor);
             }
         }
@@ -235,7 +236,7 @@ namespace T11.Windows
 
             if (ungroupedNodesList.Count == 1)
             {
-                --RepeatedNamesAmount;
+                --NameErrorsAmount;
                 ungroupedNodesList[0].ResetStyle();
                 return;
             }
@@ -265,7 +266,7 @@ namespace T11.Windows
 
             if(groupsList.Count == 2)
             {
-                ++RepeatedNamesAmount;
+                ++NameErrorsAmount;
                 groupsList[0].SetErrorStyle(errorColor);
             }
         }
@@ -279,7 +280,7 @@ namespace T11.Windows
 
             if(groupsList.Count == 1)
             {
-                --RepeatedNamesAmount;
+                --NameErrorsAmount;
                 groupsList[0].ResetStyle();
                 return;
             }
@@ -322,7 +323,7 @@ namespace T11.Windows
 
             if (groupedNodesList.Count == 2)
             {
-                ++RepeatedNamesAmount;
+                ++NameErrorsAmount;
                 groupedNodesList[0].SetErrorStyle(errorColor);
             }
         }
@@ -341,7 +342,7 @@ namespace T11.Windows
 
             if (groupNodesList.Count == 1)
             {
-                --RepeatedNamesAmount;
+                --NameErrorsAmount;
                 groupNodesList[0].ResetStyle();
                 return;
             }
@@ -478,6 +479,22 @@ namespace T11.Windows
             {
                 T11Group t11Group = (T11Group) group;
                 t11Group.title = newTitle.RemoveWhitespaces().RemoveSpecialCharacters();
+
+                if (string.IsNullOrEmpty(t11Group.title))
+                {
+                    if (!string.IsNullOrEmpty(t11Group.OldTitle))
+                    {
+                        ++NameErrorsAmount;
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(t11Group.OldTitle))
+                    {
+                        --NameErrorsAmount;
+                    }
+                }
+
                 RemoveGroup(t11Group);
 
                 t11Group.OldTitle = t11Group.title;
@@ -517,6 +534,15 @@ namespace T11.Windows
 
                 return changes;
             };
+        }
+
+        public void ClearGraph()
+        {
+            graphElements.ForEach(graphElement => RemoveElement(graphElement));
+            groups.Clear();
+            groupedNodes.Clear();
+            ungroupedNodes.Clear();
+            nameErrorsAmount = 0;
         }
     }
 }

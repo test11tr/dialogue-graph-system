@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -11,6 +12,7 @@ namespace T11.Elements
     using Data.Save;
     using Utilities;
     using Windows;
+
 
     public class T11Node : Node
     {
@@ -48,6 +50,21 @@ namespace T11.Elements
 
                 target.value = callback.newValue.RemoveWhitespaces().RemoveSpecialCharacters();
 
+                if (string.IsNullOrEmpty(target.value))
+                {
+                    if(!string.IsNullOrEmpty(DialogueName)) 
+                    {
+                        ++graphView.NameErrorsAmount;                    
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(DialogueName))
+                    {
+                        --graphView.NameErrorsAmount;
+                    }
+                }
+
                 if (Group == null) 
                 {
                     graphView.RemoveUngroupedNode(this);
@@ -84,7 +101,10 @@ namespace T11.Elements
 
             Foldout textFoldout = T11ElementUtility.CreateFoldout("Dialogue Details");
 
-            TextField textTextField = T11ElementUtility.CreateTextArea(Text);
+            TextField textTextField = T11ElementUtility.CreateTextArea(Text, null, callback =>
+            {
+                Text = callback.newValue;
+            });
 
             textTextField.AddClasses(
                 "t11-node__textfield",
@@ -131,6 +151,12 @@ namespace T11.Elements
 
                 graphView.DeleteElements(port.connections);
             }
+        }
+
+        public bool IsStartingNode()
+        {
+            Port inputPort = (Port)inputContainer.Children().First();
+            return !inputPort.connected;
         }
 
         public void SetErrorStyle(Color color)

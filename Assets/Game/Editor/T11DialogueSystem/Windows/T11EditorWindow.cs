@@ -11,8 +11,9 @@ namespace T11.Windows
 
     public class T11EditorWindow : EditorWindow
     {
+        private T11GraphView graphView;
         private readonly string defaultFileName = "defaultFile";
-        private TextField fileNameTextField;
+        private static TextField fileNameTextField;
         private Button saveButton;
 
         [MenuItem("T11/Dialogue Graph")]
@@ -30,7 +31,7 @@ namespace T11.Windows
 
         private void AddGraphView()
         {
-            T11GraphView graphView = new T11GraphView(this);
+            graphView = new T11GraphView(this);
             graphView.StretchToParentSize();
             rootVisualElement.Add(graphView);
         }
@@ -43,19 +44,57 @@ namespace T11.Windows
                 fileNameTextField.value = callback.newValue.RemoveWhitespaces().RemoveSpecialCharacters();
             });
             
-            saveButton = T11ElementUtility.CreateButton("Save");
-            
+            saveButton = T11ElementUtility.CreateButton("Save", () => Save());
+
+            Button clearButton = T11ElementUtility.CreateButton("Clear", () => Clear());
+            Button resetButton = T11ElementUtility.CreateButton("Reset", () => ResetGraph());
+
             toolbar.Add(fileNameTextField);
             toolbar.Add(saveButton);
+            toolbar.Add(clearButton);
+            toolbar.Add(resetButton);
 
             toolbar.AddStyleSheets("DialogueSystem/T11ToolbarStyles.uss");
 
             rootVisualElement.Add(toolbar);
         }
 
+
         private void AddStyles()
         {
             rootVisualElement.AddStyleSheets("DialogueSystem/T11Variables.uss");
+        }
+
+        private void Clear()
+        {
+            graphView.ClearGraph();
+        }
+
+        private void ResetGraph()
+        {
+            Clear();
+            UpdateFileName(defaultFileName);
+        }
+
+        public static void UpdateFileName(string newFileName)
+        {
+            fileNameTextField.value = newFileName;  
+        }
+
+        private void Save()
+        {
+            if(string.IsNullOrEmpty(fileNameTextField.value))
+            {
+                EditorUtility.DisplayDialog(
+                    "Invalid file name.",
+                    "Please ensure that you give a proper name to name to the file.",
+                    "Okay."
+                );
+                return;
+            }
+
+            T11IOUtility.Initialize(graphView, fileNameTextField.value);
+            T11IOUtility.Save();
         }
 
         public void EnableSaving()
