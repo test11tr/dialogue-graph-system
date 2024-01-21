@@ -20,6 +20,8 @@ namespace T11.Windows
         private T11EditorWindow editorWindow;
         private T11SearchWindow searchWindow;
 
+        private MiniMap miniMap;
+
         private SerializableDictionary<string, T11NodeErrorData> ungroupedNodes;
         private SerializableDictionary<string, T11GroupErrorData> groups;
         private SerializableDictionary<Group, SerializableDictionary<string, T11NodeErrorData>> groupedNodes;
@@ -59,6 +61,7 @@ namespace T11.Windows
             AddManipulators();
             AddGridBacground();
             AddSearchWindow();
+            AddMiniMap();
 
             OnElementsDeleted();
             OnGroupElementsAdded();
@@ -67,6 +70,7 @@ namespace T11.Windows
             OnGraphViewChanged();
 
             AddStyles();
+            AddMiniMapStyles();
         }
 
         private void AddGridBacground()
@@ -84,6 +88,18 @@ namespace T11.Windows
             );
         }
 
+        private void AddMiniMapStyles()
+        {
+            StyleColor backgroundColor = new StyleColor(new Color32(29, 29, 30, 255));
+            StyleColor borderColor = new StyleColor(new Color32(51,51,51,255));
+
+            miniMap.style.backgroundColor = backgroundColor;
+            miniMap.style.borderTopColor = borderColor;
+            miniMap.style.borderBottomColor = borderColor;
+            miniMap.style.borderLeftColor = borderColor;
+            miniMap.style.borderRightColor = borderColor;
+        }
+
         private void AddSearchWindow()
         {
             if( searchWindow == null )
@@ -93,6 +109,18 @@ namespace T11.Windows
             }
 
             nodeCreationRequest = context => SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), searchWindow);
+        }
+
+        private void AddMiniMap()
+        {
+            miniMap = new MiniMap()
+            {
+                anchored = true,
+            };
+
+            miniMap.SetPosition(new Rect(15, 50, 200, 100));
+            Add(miniMap);
+            miniMap.visible = false;
         }
 
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
@@ -548,6 +576,11 @@ namespace T11.Windows
             groupedNodes.Clear();
             ungroupedNodes.Clear();
             nameErrorsAmount = 0;
+        }
+
+        public void ToggleMiniMap()
+        {
+            miniMap.visible = !miniMap.visible;
         }
     }
 }

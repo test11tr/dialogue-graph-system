@@ -56,3 +56,8 @@ TextField:focus > .unity-text-field__label
 {
 	color: var(--t11-colors-window-yellow);
 }
+
+.t11-toolbar__button__selected
+{
+	color: var(--t11-colors-window-yellow);
+}

@@ -15,6 +15,7 @@ namespace T11.Windows
         private readonly string defaultFileName = "defaultFile";
         private static TextField fileNameTextField;
         private Button saveButton;
+        private Button miniMapButton;
 
         [MenuItem("T11/Dialogue Graph")]
         public static void Open()
@@ -46,15 +47,16 @@ namespace T11.Windows
             
             saveButton = T11ElementUtility.CreateButton("Save", () => Save());
             Button loadButton = T11ElementUtility.CreateButton("Load", () => Load());
-
             Button clearButton = T11ElementUtility.CreateButton("Clear", () => Clear());
             Button resetButton = T11ElementUtility.CreateButton("Reset", () => ResetGraph());
+            miniMapButton = T11ElementUtility.CreateButton("MiniMap", () => ToggleMiniMap());
 
             toolbar.Add(fileNameTextField);
             toolbar.Add(saveButton);
             toolbar.Add(loadButton);
             toolbar.Add(clearButton);
             toolbar.Add(resetButton);
+            toolbar.Add(miniMapButton);
 
             toolbar.AddStyleSheets("DialogueSystem/T11ToolbarStyles.uss");
 
@@ -109,6 +111,12 @@ namespace T11.Windows
             Clear();
             T11IOUtility.Initialize(graphView, Path.GetFileNameWithoutExtension(filePath));
             T11IOUtility.Load();
+        }
+
+        private void ToggleMiniMap()
+        {
+            graphView.ToggleMiniMap();
+            miniMapButton.ToggleInClassList(".t11-toolbar__button__selected");
         }
 
         public void EnableSaving()
