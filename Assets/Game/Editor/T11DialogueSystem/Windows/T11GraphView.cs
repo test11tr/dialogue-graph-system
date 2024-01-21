@@ -138,17 +138,22 @@ namespace T11.Windows
         private IManipulator CreateNodeContextualMenu(string actionTitle, T11DialogueType dialogueType)
         {
             ContextualMenuManipulator contextualMenuManipulator = new ContextualMenuManipulator(
-                MenuEvent => MenuEvent.menu.AppendAction(actionTitle, actionEvent => AddElement(CreateNode(dialogueType, GetLocalMousePosition(actionEvent.eventInfo.localMousePosition))))
+                MenuEvent => MenuEvent.menu.AppendAction(actionTitle, actionEvent => AddElement(CreateNode("Type a Dialogue Name", dialogueType, GetLocalMousePosition(actionEvent.eventInfo.localMousePosition))))
             );
             return contextualMenuManipulator;
         }
 
-        public T11Node CreateNode(T11DialogueType dialogueType, Vector2 position)
+        public T11Node CreateNode(string nodeName, T11DialogueType dialogueType, Vector2 position, bool shouldDraw = true)
         {
             Type nodeType = Type.GetType($"T11.Elements.T11{dialogueType}Node");
             T11Node node = (T11Node) Activator.CreateInstance( nodeType );
-            node.Initialize(this, position);
-            node.Draw();
+            node.Initialize(nodeName, this, position);
+
+            if(shouldDraw )
+            {
+                node.Draw();
+            }
+
             AddUngroupedNode(node);
             return node;
         }

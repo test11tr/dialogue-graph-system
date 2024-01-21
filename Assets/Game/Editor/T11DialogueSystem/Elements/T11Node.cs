@@ -25,10 +25,10 @@ namespace T11.Elements
         protected T11GraphView graphView;
         private Color defaultBackgroundColor;
 
-        public virtual void Initialize(T11GraphView t11GraphView, Vector2 position)
+        public virtual void Initialize(string nodeName, T11GraphView t11GraphView, Vector2 position)
         {
             ID = Guid.NewGuid().ToString();
-            DialogueName = "Type Dialogue Name";
+            DialogueName = nodeName;
             Choices = new List<T11ChoiceSaveData>();
             Text = "Write dialogue here.";
 

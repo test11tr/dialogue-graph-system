@@ -12,6 +12,7 @@ namespace T11.Utilities
     using Elements;
     using ScriptableObjects;
     using T11.Data;
+    using UnityEditor.Experimental.GraphView;
     using Windows;
 
     public static class T11IOUtility
@@ -26,6 +27,9 @@ namespace T11.Utilities
         private static Dictionary<string, T11DialogueGroupSO> createdDialogueGroups;
         private static Dictionary<string, T11DialogueSO> createdDialogues;
 
+        private static Dictionary<string, T11Group> loadedGroups;
+        private static Dictionary<string, T11Node> loadedNodes;
+
         public static void Initialize(T11GraphView t11GraphView, string graphName)
         {
             graphView = t11GraphView;
@@ -35,6 +39,8 @@ namespace T11.Utilities
             nodes = new List<T11Node>();
             createdDialogueGroups = new Dictionary<string, T11DialogueGroupSO>();
             createdDialogues = new Dictionary<string, T11DialogueSO>();
+            loadedGroups = new Dictionary<string, T11Group>();
+            loadedNodes = new Dictionary<string, T11Node>();
         }
 
         public static void Save()
@@ -77,18 +83,7 @@ namespace T11.Utilities
 
         private static void SaveNodeToGraph(T11Node node, T11GraphSaveDataSO graphData)
         {
-            List<T11ChoiceSaveData> choices = new List<T11ChoiceSaveData>();
-
-            foreach(T11ChoiceSaveData choice in node.Choices)
-            {
-                T11ChoiceSaveData choiceData = new T11ChoiceSaveData()
-                {
-                    Text = choice.Text,
-                    NodeID = choice.NodeID,
-                };
-
-                choices.Add(choiceData);
-            }
+            List<T11ChoiceSaveData> choices = CloneNodeChoices(node.Choices);
 
             T11NodeSaveData nodeData = new T11NodeSaveData()
             {
@@ -101,7 +96,25 @@ namespace T11.Utilities
                 Position = node.GetPosition().position
             };
 
-            graphData.Nodes.Add(nodeData); 
+            graphData.Nodes.Add(nodeData);
+        }
+
+        private static List<T11ChoiceSaveData> CloneNodeChoices(List<T11ChoiceSaveData> nodeChoices)
+        {
+            List<T11ChoiceSaveData> choices = new List<T11ChoiceSaveData>();
+
+            foreach (T11ChoiceSaveData choice in nodeChoices)
+            {
+                T11ChoiceSaveData choiceData = new T11ChoiceSaveData()
+                {
+                    Text = choice.Text,
+                    NodeID = choice.NodeID,
+                };
+
+                choices.Add(choiceData);
+            }
+
+            return choices;
         }
 
         private static void SaveNodeToScriptableObject(T11Node node, T11DialogueContainerSO dialogueContainer)
@@ -263,7 +276,80 @@ namespace T11.Utilities
             graphData.OldGroupedNodeNames = new SerializableDictionary<string, List<string>>(currentGroupedNodeNames);
         }
 
-        
+        public static void Load()
+        {
+            T11GraphSaveDataSO graphData = LoadAsset<T11GraphSaveDataSO>("Assets/Game/Editor/T11DialogueSystem/Graphs", graphFileName);
+
+            if(graphData == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Couldn't load the file!",
+                    "The file at the following path could not be found: \n\n" +
+                    $"Assets/Game/Editor/T11DialogueSystem/Graphs/{graphFileName}\n\n" +
+                    "Make sure you chose the right file and it's placed at the folder path mentioned above.",
+                    "Okey."
+                );
+
+                return;
+            }
+            T11EditorWindow.UpdateFileName(graphData.FileName);
+            LoadGroups(graphData.Groups);
+            LoadNodes(graphData.Nodes);
+            LoadNodesConnections();
+        }
+
+        private static void LoadGroups(List<T11GroupSaveData> groups)
+        {
+            foreach(T11GroupSaveData groupData in groups)
+            {
+                T11Group group = graphView.CreateGroup(groupData.Name, groupData.Position);
+                group.ID  = groupData.ID;
+                loadedGroups.Add(group.ID, group);
+            }
+        }
+
+        private static void LoadNodes(List<T11NodeSaveData> nodes)
+        {
+            foreach(T11NodeSaveData nodeData in nodes)
+            {
+                List<T11ChoiceSaveData> choices = CloneNodeChoices(nodeData.Choices);
+                T11Node node = graphView.CreateNode(nodeData.Name, nodeData.DialogueType, nodeData.Position, false);
+                node.ID = nodeData.ID;
+                node.Choices = choices;
+                node.Text = nodeData.Text;
+                node.Draw();
+                graphView.AddElement(node);
+                loadedNodes.Add(node.ID, node);
+                if (string.IsNullOrEmpty(nodeData.GroupID))
+                {
+                    continue;
+                }
+                T11Group group = loadedGroups[nodeData.GroupID];
+                node.Group = group;
+                group.AddElement(node);
+            }
+        }
+
+        private static void LoadNodesConnections()
+        {
+            foreach(KeyValuePair<string, T11Node> loadedNode in loadedNodes)
+            {
+                foreach(Port choicePort in loadedNode.Value.outputContainer.Children())
+                {
+                    T11ChoiceSaveData choiceData = (T11ChoiceSaveData)choicePort.userData;
+                    if(string.IsNullOrEmpty(choiceData.NodeID))
+                    {
+                        continue;
+                    }
+
+                    T11Node nextNode = loadedNodes[choiceData.NodeID];
+                    Port nextNodeInputPort = (Port)nextNode.inputContainer.Children().First();
+                    Edge edge = choicePort.ConnectTo(nextNodeInputPort);
+                    graphView.AddElement(edge);
+                    loadedNode.Value.RefreshPorts();
+                }
+            }
+        }
 
         private static void CreateStaticFolders()
         {
@@ -314,19 +400,24 @@ namespace T11.Utilities
             FileUtil.DeleteFileOrDirectory($"{fullPath}/");
         }
 
-        private static T CreateAsset<T>(string path, string assetName) where T : ScriptableObject 
+        private static T CreateAsset<T>(string path, string assetName) where T : ScriptableObject
         {
             string fullPath = $"{path}/{assetName}.asset";
+            T asset = LoadAsset<T>(path, assetName);
 
-            T asset = AssetDatabase.LoadAssetAtPath<T>(fullPath);
-
-            if(asset == null)
+            if (asset == null)
             {
                 asset = ScriptableObject.CreateInstance<T>();
                 AssetDatabase.CreateAsset(asset, fullPath);
             }
-                        
+
             return asset;
+        }
+
+        private static T LoadAsset<T>(string path, string assetName) where T : ScriptableObject
+        {
+            string fullPath = $"{path}/{assetName}.asset";
+            return AssetDatabase.LoadAssetAtPath<T>(fullPath);
         }
 
         private static void RemoveAsset(string path, string assetName)

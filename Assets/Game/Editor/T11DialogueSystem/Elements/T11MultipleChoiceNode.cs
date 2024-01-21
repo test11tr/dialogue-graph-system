@@ -12,9 +12,9 @@ namespace T11.Elements
 {
     public class T11MultipleChoiceNode : T11Node
     {
-        public override void Initialize(T11GraphView t11GraphView, Vector2 position)
+        public override void Initialize(string nodeName, T11GraphView t11GraphView, Vector2 position)
         {
-            base.Initialize(t11GraphView, position);
+            base.Initialize(nodeName, t11GraphView, position);
             DialogueType = T11DialogueType.MultipleChoice;
             T11ChoiceSaveData choiceData = new T11ChoiceSaveData() 
             {

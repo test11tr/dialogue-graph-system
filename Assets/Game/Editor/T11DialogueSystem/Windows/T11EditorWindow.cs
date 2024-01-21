@@ -6,7 +6,7 @@ using UnityEditor.UIElements;
 
 namespace T11.Windows
 {
-
+    using System.IO;
     using Utilities;
 
     public class T11EditorWindow : EditorWindow
@@ -45,12 +45,14 @@ namespace T11.Windows
             });
             
             saveButton = T11ElementUtility.CreateButton("Save", () => Save());
+            Button loadButton = T11ElementUtility.CreateButton("Load", () => Load());
 
             Button clearButton = T11ElementUtility.CreateButton("Clear", () => Clear());
             Button resetButton = T11ElementUtility.CreateButton("Reset", () => ResetGraph());
 
             toolbar.Add(fileNameTextField);
             toolbar.Add(saveButton);
+            toolbar.Add(loadButton);
             toolbar.Add(clearButton);
             toolbar.Add(resetButton);
 
@@ -58,7 +60,6 @@ namespace T11.Windows
 
             rootVisualElement.Add(toolbar);
         }
-
 
         private void AddStyles()
         {
@@ -95,6 +96,19 @@ namespace T11.Windows
 
             T11IOUtility.Initialize(graphView, fileNameTextField.value);
             T11IOUtility.Save();
+        }
+
+        private void Load()
+        {
+            string filePath = EditorUtility.OpenFilePanel("Dialogue Graphs", "Assets/Game/Editor/T11DialogueSystem/Graphs", "asset");
+            if (string.IsNullOrEmpty(filePath))
+            {
+                return;
+            }
+
+            Clear();
+            T11IOUtility.Initialize(graphView, Path.GetFileNameWithoutExtension(filePath));
+            T11IOUtility.Load();
         }
 
         public void EnableSaving()

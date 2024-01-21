@@ -55,13 +55,13 @@ namespace T11.Windows
             switch (SearchTreeEntry.userData) {
                 case T11DialogueType.SingleChoice:
                 {
-                    T11SingleChoiceNode singleChoiceNode = (T11SingleChoiceNode)graphView.CreateNode(T11DialogueType.SingleChoice, localMousePosition);
+                    T11SingleChoiceNode singleChoiceNode = (T11SingleChoiceNode)graphView.CreateNode("Type a Dialogue Name", T11DialogueType.SingleChoice, localMousePosition);
                     graphView.AddElement(singleChoiceNode);
                     return true;
                 }
                 case T11DialogueType.MultipleChoice:
                 {
-                    T11MultipleChoiceNode multipleChoiceNode = (T11MultipleChoiceNode)graphView.CreateNode(T11DialogueType.MultipleChoice, localMousePosition);
+                    T11MultipleChoiceNode multipleChoiceNode = (T11MultipleChoiceNode)graphView.CreateNode("Type a Dialogue Name", T11DialogueType.MultipleChoice, localMousePosition);
                     graphView.AddElement(multipleChoiceNode);
                     return true;
                 }
