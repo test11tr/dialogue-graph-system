@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aba8c41bb5c6f824997e13f547262a68, type: 3}
+  m_Name: Deneme
+  m_EditorClassIdentifier: 
+  <FileName>k__BackingField: Deneme
+  <DialogueGroups>k__BackingField:
+    list:
+    - Key: {fileID: 11400000, guid: 49cf340e854783b419c173467389b5f2, type: 2}
+      Value:
+      - {fileID: 11400000, guid: 98ea9d00274ebc247a0dc6c35c49284c, type: 2}
+      - {fileID: 11400000, guid: 00c8b112dc928784c94d08dbb15ae7cf, type: 2}
+      - {fileID: 11400000, guid: 9574899a732f01e468c66d22744d73e9, type: 2}
+      - {fileID: 11400000, guid: 3bf1f0182a6fe9042ac35780b7b0b2fc, type: 2}
+    - Key: {fileID: 11400000, guid: 3a19659a7d0defb41a7d3245ab87295b, type: 2}
+      Value:
+      - {fileID: 11400000, guid: 8f66dea7ee222d244aee502fa82928fe, type: 2}
+      - {fileID: 11400000, guid: 5dada2b66cae8e344b4f17fc2fcf51ad, type: 2}
+      - {fileID: 11400000, guid: 52525ba57bf1fb246b6c41aac6b30c3a, type: 2}
+      - {fileID: 11400000, guid: caea6f058358e74459a2773c796085e3, type: 2}
+  <UngroupedDialogues>k__BackingField:
+  - {fileID: 11400000, guid: d4eb9fa71f6d0dc41ba3585fe48dbe6c, type: 2}
+  - {fileID: 11400000, guid: f473956e345e787428186d093882373b, type: 2}
